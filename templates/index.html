@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <title>Fab Book Site</title>
+    <style>
+      .mypic {
+        width: 100%;
+        height: 300px;
+        background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://i.pinimg.com/564x/b1/4a/43/b14a4392506391b195319e89777525a5.jpg");
+        background-position: center;
+        background-size: cover;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mypost {
+        width: 95%;
+        max-width: 500px;
+        margin: 20px auto 20px auto;
+        padding: 20px;
+        box-shadow: 0px 0px 3px 0px black;
+      }
+
+      .mypost > button {
+        margin-top: 15px;
+      }
+
+      .mycard {
+        width: 95%;
+        max-width: 500px;
+        margin: auto;
+      }
+
+      .mycard > .card {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="mypic">
+      <h1>Naruto Shippuden</h1>
+    </div>
+
+    <div class="mypost">
+      <div class="form-floating mb-3">
+        <input text="text" class="form-control" id="floatingInput" placeholder="Enter Your nickname here" />
+        <label for="floatingInput">Nickname</label>
+      </div>
+      <div class="form-floating">
+        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
+        <label for="floatingTextarea">Fan Message</label>
+      </div>
+      <button type="button" class="btn btn-dark" onclick="leave_message()">Leave a fan message</button>
+    </div>
+
+    <div class="mycard">
+      <!-- Cards for displaying fan messages will be appended here by JavaScript -->
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        show_messages();
+      });
+
+      // Fungsi untuk mengirim pesan penggemar ke server
+      function leave_message() {
+        let nickname = $("#floatingInput").val();
+        let message = $("#floatingTextarea").val();
+
+        if (nickname.trim() === "" || message.trim() === "") {
+          alert("Please fill in both fields!");
+          return;
+        }
+
+        $.ajax({
+          type: "POST",
+          url: "/fan_message",
+          data: {
+            nickname_give: nickname,
+            message_give: message,
+          },
+          success: function (response) {
+            alert(response["msg"]);
+            $("#floatingInput").val(""); // Clear the input field
+            $("#floatingTextarea").val(""); // Clear the textarea
+            show_messages(); // Refresh message list
+          },
+        });
+      }
+
+      // Fungsi untuk menampilkan pesan penggemar dari server
+      function show_messages() {
+        $.ajax({
+          type: "GET",
+          url: "/fan_messages",
+          data: {},
+          success: function (response) {
+            let messages = response["messages"];
+            $(".mycard").empty(); // Clear the message list before appending
+            for (let i = 0; i < messages.length; i++) {
+              let nickname = messages[i]["nickname"];
+              let message = messages[i]["message"];
+
+              let temp_html = `
+                <div class="card">
+                  <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                      <p>${message}</p>
+                      <footer class="blockquote-footer">${nickname}</footer>
+                    </blockquote>
+                  </div>
+                </div>
+              `;
+              $(".mycard").append(temp_html);
+            }
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
